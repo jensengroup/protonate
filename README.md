@@ -1,7 +1,15 @@
-# protonate
+# Protonate
 
-usage: python protonate.py xxx.mol2 > xxx.xyz
+Takes a `mol2` file and adds protons on specific atomtypes and outputs it in `xyz` format.
 
-protonates amine, imine, and aromatic Ns
+Currently protonates amine, imine, and aromatic Ns
 
-TODO: currently skips all N.pl3 atoms, but should protonate N.pl3 atoms bonded to only 2 atoms
+## Usage
+
+    ./protonate.py xxx.mol2 > xxx.xyz
+
+
+## TODO
+
+    - currently skips all N.pl3 atoms, but should protonate N.pl3 atoms bonded to only 2 atoms
+
