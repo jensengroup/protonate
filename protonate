@@ -9,6 +9,8 @@ def dist(coord,N_coord):
    return dist
 
 
+if __name__ == "__main__":
+
 filename = sys.argv[1]
 
 file = open(filename,'r')
@@ -47,11 +49,11 @@ for i in range(len(N_atoms)):
     bonded_to_N.append([])
     for j in range(atoms):
         if j != N_atoms[i]:
-           r = dist(coord[j],N_coord[i])
+            r = dist(coord[j],N_coord[i])
          #  print r
-           if r < 1.8: 
-              bonded_to_N[i].append(j)
- 
+            if r < 1.8:
+                bonded_to_N[i].append(j)
+
 
 #print bonded_to_N
 
