@@ -3,13 +3,11 @@
 import string, math,sys
 
 def dist(coord,N_coord):
- #  print coord, N_coord
    dist = 0.0
    for i in range(3): dist += (coord[i] - N_coord[i])**2
    dist = math.sqrt(dist)
- #  print dist
-       
-   return dist 
+   return dist
+
 
 filename = sys.argv[1]
 
@@ -32,14 +30,15 @@ atoms = int(words[0])
 for i in range(4): line = file.readline()
 
 for i in range(atoms):
-   line = file.readline()
-   words = string.split(line)
-   word = words[5].split(".")
-   atom.append(word[0])
-   coord.append((float(words[2]),float(words[3]),float(words[4])))
-   if words[5] == 'N.3' or words[5] == 'N.2' or words[5] == 'N.ar': 
-       N_atoms.append(i)
-       N_coord.append((float(words[2]),float(words[3]),float(words[4])))
+    
+    line = file.readline()
+    words = string.split(line)
+    word = words[5].split(".")
+    atom.append(word[0])
+    coord.append((float(words[2]),float(words[3]),float(words[4])))
+    if words[5] == 'N.3' or words[5] == 'N.2' or words[5] == 'N.ar': 
+        N_atoms.append(i)
+        N_coord.append((float(words[2]),float(words[3]),float(words[4])))
 
 #print atom
 #print N_atoms, len(N_atoms)
@@ -60,19 +59,19 @@ c_ave = []
 for i in range(3): c_ave.append(0.0)
 
 for i in range(len(N_atoms)):
-   if len(bonded_to_N[i]) > 3: continue #skip quaternary Ns
-   for k in range(3): c_ave[k] = 0.0
-   for j in range(len(bonded_to_N[i])):
-      #print i,j,bonded_to_N[i][j]
-       for k in range(3): c_ave[k] += coord[bonded_to_N[i][j]][k]
-   for k in range(3): c_ave[k] = c_ave[k]/len(bonded_to_N[i])
-   r = dist(c_ave, coord[N_atoms[i]])
-#  print i,coord[N_atoms[i]],c_ave,r
-   for k in range(3):
-      c_ave[k] = coord[N_atoms[i]][k] + sign*(c_ave[k] - coord[N_atoms[i]][k])/r
-   coord.append((c_ave[0],c_ave[1],c_ave[2]))
-   atom.append('H')
-   atoms += 1
+    if len(bonded_to_N[i]) > 3: continue #skip quaternary Ns
+    for k in range(3): c_ave[k] = 0.0
+    for j in range(len(bonded_to_N[i])):
+        #print i,j,bonded_to_N[i][j]
+        for k in range(3): c_ave[k] += coord[bonded_to_N[i][j]][k]
+    for k in range(3): c_ave[k] = c_ave[k]/len(bonded_to_N[i])
+    r = dist(c_ave, coord[N_atoms[i]])
+    #  print i,coord[N_atoms[i]],c_ave,r
+    for k in range(3):
+        c_ave[k] = coord[N_atoms[i]][k] + sign*(c_ave[k] - coord[N_atoms[i]][k])/r
+    coord.append((c_ave[0],c_ave[1],c_ave[2]))
+    atom.append('H')
+    atoms += 1
    
 print '{0:3d}'.format(atoms)
 print '{0:50s}'.format(title)
