@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import string, math,sys
 
 def dist(coord,N_coord):
