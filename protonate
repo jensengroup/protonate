@@ -7,13 +7,6 @@ def distance(R1, R2):
     dR = (R1 - R2)**2
     return np.sqrt(np.sum(dR))
 
-def dist(coord,N_coord):
-   dist = 0.0
-   for i in range(3): dist += (coord[i] - N_coord[i])**2
-   dist = math.sqrt(dist)
-   return dist
-
-
 if __name__ == "__main__":
 
     filename = sys.argv[1]
