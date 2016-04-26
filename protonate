@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
 import string, math,sys
+import numpy as np
+
+def distance(R1, R2):
+    dR = (R1 - R2)**2
+    return np.sqrt(np.sum(dR))
 
 def dist(coord,N_coord):
    dist = 0.0
@@ -25,52 +30,77 @@ if __name__ == "__main__":
 
     sign = -1 #change to +1 to invert
 
+    # Get number of atoms
     for i in range(3): line = file.readline()
     words = string.split(line)
     atoms = int(words[0])
 
+    # skip 4 lines
     for i in range(4): line = file.readline()
 
+    # Read atom lines
     for i in range(atoms):
 
         line = file.readline()
-        words = string.split(line)
-        word = words[5].split(".")
-        atom.append(word[0])
-        coord.append((float(words[2]),float(words[3]),float(words[4])))
-        if words[5] == 'N.3' or words[5] == 'N.2' or words[5] == 'N.ar': 
+        line = line.split()
+
+        atom_id = line[0]
+        atom_type = line[1]
+        atom_x = float(line[2])
+        atom_y = float(line[3])
+        atom_z = float(line[4])
+        atom_hyp = line[5]
+
+        atom.append(atom_type)
+        coord.append(np.array([atom_x, atom_y, atom_z]))
+
+        check_hyp = ['N.3', 'N.2', 'N.ar']
+
+        if any(x in atom_hyp for x in check_hyp):
             N_atoms.append(i)
-            N_coord.append((float(words[2]),float(words[3]),float(words[4])))
+            N_coord.append([atom_x, atom_y, atom_z])
 
-    #print atom
-    #print N_atoms, len(N_atoms)
 
+    # Iterate over found Nitrogens
     for i in range(len(N_atoms)):
+
         bonded_to_N.append([])
+
         for j in range(atoms):
+
             if j != N_atoms[i]:
-                r = dist(coord[j],N_coord[i])
-            #  print r
+                r = distance(coord[j], coord[N_atoms[i]])
+                # r = dist(coord[j], N_coord[i]) # What is the reason for N_coord???
+
+                # check if bonded
                 if r < 1.8:
                     bonded_to_N[i].append(j)
 
-
-    #print bonded_to_N
 
     c_ave = []
     for i in range(3): c_ave.append(0.0)
 
     for i in range(len(N_atoms)):
+
+        c_ave = np.zeros(3)
+
         if len(bonded_to_N[i]) > 3: continue #skip quaternary Ns
+
+        # HAHAHAHAHAHA
         for k in range(3): c_ave[k] = 0.0
+
         for j in range(len(bonded_to_N[i])):
             #print i,j,bonded_to_N[i][j]
             for k in range(3): c_ave[k] += coord[bonded_to_N[i][j]][k]
+
         for k in range(3): c_ave[k] = c_ave[k]/len(bonded_to_N[i])
+
         r = dist(c_ave, coord[N_atoms[i]])
         #  print i,coord[N_atoms[i]],c_ave,r
+
         for k in range(3):
             c_ave[k] = coord[N_atoms[i]][k] + sign*(c_ave[k] - coord[N_atoms[i]][k])/r
+
         coord.append((c_ave[0],c_ave[1],c_ave[2]))
         atom.append('H')
         atoms += 1
