@@ -1,40 +1,59 @@
 #!/usr/bin/env python
 
-import string, math,sys
+import sys
 import numpy as np
 
+
 def distance(R1, R2):
+    """
+    Calculate the distance between R1 and R2
+    """
     dR = (R1 - R2)**2
     return np.sqrt(np.sum(dR))
 
-if __name__ == "__main__":
 
-    filename = sys.argv[1]
+def write_coordinates(atoms, coordinates, title=""):
+    """
+    Print coordinates in XYZ format
+    """
 
-    file = open(filename,'r')
+    N, D = np.shape(coordinates)
 
-    atom = []
-    coord = []
-    N_atoms = []
-    N_coord = []
-    bonded_to_N = []
+    print str(N)
+    print title
 
-    title = " "
+    for atom, R in zip(atoms, coordinates):
+        print "{:2s} {} {} {}".format(atom, R[0], R[1], R[2])
 
-    sign = -1 #change to +1 to invert
+    return
+
+
+def read_mol2(filename):
+    """
+    Read molecule file
+    """
+
+    f = open(filename,'r')
+
+    atoms = []
+    coordinates = []
+    atoms_N = [] # indexes for the Nitrogen atoms
 
     # Get number of atoms
-    for i in range(3): line = file.readline()
-    words = string.split(line)
-    atoms = int(words[0])
+    for i in range(3):
+        line = f.readline()
+
+    words = line.split()
+    n_atoms = int(words[0])
 
     # skip 4 lines
-    for i in range(4): line = file.readline()
+    for i in range(4):
+        f.readline()
 
     # Read atom lines
-    for i in range(atoms):
+    for i in xrange(n_atoms):
 
-        line = file.readline()
+        line = f.readline()
         line = line.split()
 
         atom_id = line[0]
@@ -44,54 +63,78 @@ if __name__ == "__main__":
         atom_z = float(line[4])
         atom_hyp = line[5]
 
-        atom.append(atom_type)
-        coord.append(np.array([atom_x, atom_y, atom_z]))
+        atoms.append(atom_type)
+        coordinates.append(np.array([atom_x, atom_y, atom_z]))
 
+        # check if atom is any of these hybridization
         check_hyp = ['N.3', 'N.2', 'N.ar']
 
-        if any(x in atom_hyp for x in check_hyp):
-            N_atoms.append(i)
-            N_coord.append([atom_x, atom_y, atom_z])
+        # if any(x in atom_hyp for x in check_hyp):
+        if atom_hyp in check_hyp:
+            atoms_N.append(i)
+
+    return atoms, coordinates, atoms_N
 
 
-    # Iterate over found Nitrogens
-    for i in range(len(N_atoms)):
+def find_bonds(coordinates, atoms_N):
+    """
+    Find all covalent bonds to each Nitrogen
+    """
+    bonded_to_N = []
+
+    # Iterate over found Nitrogens and note bond configuration
+    for k, i in enumerate(atoms_N):
 
         bonded_to_N.append([])
 
-        for j in range(atoms):
+        for j, coordinate in enumerate(coordinates):
 
-            if j != N_atoms[i]:
-                r = distance(coord[j], coord[N_atoms[i]])
-                # r = dist(coord[j], N_coord[i]) # What is the reason for N_coord???
+            if j != i:
+                r = distance(coordinate, coordinates[i])
 
                 # check if bonded
                 if r < 1.8:
-                    bonded_to_N[i].append(j)
+                    bonded_to_N[k].append(j)
+
+    return bonded_to_N
 
 
-    for i in range(len(N_atoms)):
+def protonate(filename):
+
+    title = " "
+
+    sign = -1 #change to +1 to invert
+
+    atoms, coordinates, atoms_N = read_mol2(filename)
+    bonded_to_N = find_bonds(coordinates, atoms_N)
+
+    # TODO this should be every combination, and not only "protonate all"
+    for i in xrange(len(atoms_N)):
 
         c_ave = np.zeros(3)
 
-        if len(bonded_to_N[i]) > 3: continue #skip quaternary Ns
+        n_bonded = len(bonded_to_N[i])
 
-        for j in range(len(bonded_to_N[i])):
-            c_ave += coord[bonded_to_N[i][j]]
+        if n_bonded > 3: continue #skip quaternary Ns
 
-        c_ave /= len(bonded_to_N[i])
+        for coord in bonded_to_N[i]:
+            c_ave += coord
 
-        r = distance(c_ave, coord[N_atoms[i]])
+        c_ave /= n_bonded
 
-        c_ave = coord[N_atoms[i]] + sign*(c_ave - coord[N_atoms[i]])/r
+        r = distance(c_ave, coordinates[atoms_N[i]])
 
-        coord.append(c_ave)
-        atom.append('H')
-        atoms += 1
+        c_ave = coordinates[atoms_N[i]] + sign*(c_ave - coordinates[atoms_N[i]])/r
 
-    print '{0:3d}'.format(atoms)
-    print '{0:50s}'.format(title)
+        coordinates.append(c_ave)
+        atoms.append('H')
 
-    for i in range(atoms):
-        print atom[i], coord[i][0], coord[i][1], coord[i][2]
+    write_coordinates(atoms, coordinates, title=title)
+
+
+if __name__ == "__main__":
+
+    filename = sys.argv[1]
+
+    protonate(filename)
 
