@@ -4,14 +4,12 @@ import sys
 import copy
 import numpy as np
 
-
 def distance(R1, R2):
     """
     Calculate the distance between R1 and R2
     """
     dR = (R1 - R2)**2
     return np.sqrt(np.sum(dR))
-
 
 def write_coordinates(atoms, coordinates, title=""):
     """
@@ -27,7 +25,6 @@ def write_coordinates(atoms, coordinates, title=""):
         print "{:2s} {} {} {}".format(atom, R[0], R[1], R[2])
 
     return
-
 
 def read_mol2(filename):
     """
@@ -76,7 +73,6 @@ def read_mol2(filename):
 
     return atoms, coordinates, atoms_N
 
-
 def find_bonds(coordinates, atoms_N):
     """
     Find all covalent bonds to each Nitrogen
@@ -98,7 +94,6 @@ def find_bonds(coordinates, atoms_N):
                     bonded_to_N[k].append(j)
 
     return bonded_to_N
-
 
 def protonate(filename):
 
@@ -137,8 +132,6 @@ def protonate(filename):
         conformations_atom.append(np.array(newatoms))
 
     return conformations, conformations_atom
-
-
 
 if __name__ == "__main__":
 
